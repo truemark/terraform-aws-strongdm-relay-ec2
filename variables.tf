@@ -78,3 +78,9 @@ variable "security_group_tags" {
   type = map(string)
   description = "Additional tags for the Security group"
 }
+
+variable "root_volume_size" {
+  default = 20
+  type = number
+  description = "Size of the rool volume"
+}

@@ -52,7 +52,7 @@ resource "aws_instance" "this" {
     delete_on_termination = true
     encrypted = true
     volume_type = "gp3"
-    volume_size = 20
+    volume_size = var.root_volume_size
   }
   user_data = templatefile("${path.module}/init.sh.tpl", {
     ssh_keys = var.ssh_keys
