@@ -7,7 +7,7 @@ terraform {
     }
     sdm = {
       source  = "strongdm/sdm"
-      version = "1.0.39"
+      version = "3.3.3"
     }
   }
 }
