@@ -1,8 +1,3 @@
-provider "sdm" {
-  api_access_key = var.SDM_API_ACCESS_KEY
-  api_secret_key = var.SDM_API_SECRET_KEY
-}
-
 data "aws_ami" "this" {
   most_recent = true
   filter {
@@ -21,6 +16,35 @@ resource "sdm_node" "this" {
   relay {
     name = var.name
   }
+}
+
+data "aws_iam_policy_document" "assume" {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["ec2.amazonaws.com"]
+      type        = "Service"
+    }
+  }
+}
+
+resource "aws_iam_role" "this" {
+  count = var.create && var.enable_ssm ? 1 : 0
+  name = "${var.name}-role"
+  assume_role_policy = data.aws_iam_policy_document.assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "ssm" {
+  count = var.create && var.enable_ssm ? 1 : 0
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.this[count.index].name
+}
+
+resource "aws_iam_instance_profile" "this" {
+  count = var.create && var.enable_ssm ? 1 : 0
+  name = "${var.name}-instance-profile"
+  path = "/"
+  role = aws_iam_role.this[count.index].name
 }
 
 resource "aws_security_group" "this" {
@@ -53,6 +77,7 @@ resource "aws_instance" "this" {
   subnet_id = var.subnet_id
   disable_api_termination = false
   key_name = var.key_name
+  iam_instance_profile = join("", aws_iam_instance_profile.this.*.name)
   root_block_device {
     delete_on_termination = true
     encrypted = true
@@ -68,5 +93,3 @@ resource "aws_instance" "this" {
     Name = var.name
   }))
 }
-
-

@@ -85,12 +85,8 @@ variable "root_volume_size" {
   description = "Size of the rool volume"
 }
 
-variable "SDM_API_ACCESS_KEY" {
-  type      = string
-  sensitive = true
-}
-
-variable "SDM_API_SECRET_KEY" {
-  type      = string
-  sensitive = true
+variable "enable_ssm" {
+  type = bool
+  default = true
+  description = "Enable or disable SSM on this instance"
 }
