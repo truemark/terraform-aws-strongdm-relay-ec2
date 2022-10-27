@@ -21,6 +21,7 @@ resource "sdm_node" "this" {
 data "aws_iam_policy_document" "assume" {
   statement {
     effect = "Allow"
+    actions = ["sts:AssumeRole"]
     principals {
       identifiers = ["ec2.amazonaws.com"]
       type        = "Service"
