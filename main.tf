@@ -2,13 +2,13 @@ data "aws_ami" "this" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    values = var.ami_name_filters
   }
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-  owners = ["099720109477"]
+  owners = var.ami_owners
 }
 
 resource "sdm_node" "this" {
@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "assume" {
 
 resource "aws_iam_role" "this" {
   count = var.create && var.enable_ssm ? 1 : 0
-  name = "${var.name}-role"
+  name = "${var.name}${var.instance_suffix}-role"
   assume_role_policy = data.aws_iam_policy_document.assume.json
 }
 
@@ -43,14 +43,14 @@ resource "aws_iam_role_policy_attachment" "ssm" {
 
 resource "aws_iam_instance_profile" "this" {
   count = var.create && var.enable_ssm ? 1 : 0
-  name = "${var.name}-instance-profile"
+  name = "${var.name}${var.instance_suffix}-instance-profile"
   path = "/"
   role = aws_iam_role.this[count.index].name
 }
 
 resource "aws_security_group" "this" {
   count = var.create ? 1 : 0
-  name = var.name
+  name = "${var.name}${var.instance_suffix}"
   vpc_id = var.vpc_id
   ingress {
     from_port = 22
@@ -85,12 +85,14 @@ resource "aws_instance" "this" {
     volume_type = "gp3"
     volume_size = var.root_volume_size
   }
+  user_data_replace_on_change = true
   user_data = templatefile("${path.module}/init.sh.tpl", {
+    identifier = var.force_deploy ? timestamp() : 0
     ssh_keys = var.ssh_keys
     token = sdm_node.this[count.index].relay[0].token
   })
   depends_on = [sdm_node.this]
   tags = merge(var.instance_tags, merge(var.tags, {
-    Name = var.name
+    Name = "${var.name}${var.instance_suffix}"
   }))
 }
