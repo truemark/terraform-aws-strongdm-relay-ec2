@@ -84,3 +84,13 @@ variable "root_volume_size" {
   type = number
   description = "Size of the rool volume"
 }
+
+variable "SDM_API_ACCESS_KEY" {
+  type      = string
+  sensitive = true
+}
+
+variable "SDM_API_SECRET_KEY" {
+  type      = string
+  sensitive = true
+}
