@@ -1,3 +1,8 @@
+provider "sdm" {
+  api_access_key = var.SDM_API_ACCESS_KEY
+  api_secret_key = var.SDM_API_SECRET_KEY
+}
+
 data "aws_ami" "this" {
   most_recent = true
   filter {
